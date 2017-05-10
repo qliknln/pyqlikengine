@@ -37,3 +37,16 @@ class EngineApi:
         msg = json.dumps({"jsonrpc": "2.0", "id": 0, "handle": -1, "method": "DeleteApp", "params": [app_name]})
         response = self.engine_socket.send_call(self.engine_socket, msg)
         return json.loads(response)['result']['qSuccess']
+
+    # opens an app and returns an object with handle, generic id and type
+    def open_doc(self, app_name, user_name='', password='', serial='',no_data=False):
+        msg = json.dumps({"jsonrpc": "2.0", "id": 0, "handle": -1, "method": "OpenDoc", "params": [app_name, user_name, password, serial, no_data]})
+        response = self.engine_socket.send_call(self.engine_socket, msg)
+        return json.loads(response)['result']['qReturn']
+
+    # returns an object with handle, generic id and type for the active app
+    def get_active_doc(self):
+        msg = json.dumps({"jsonrpc": "2.0", "id": 0, "handle": -1, "method": "GetActiveDoc", "params": []})
+        response = self.engine_socket.send_call(self.engine_socket, msg)
+        return json.loads(response)['result']['qReturn']
+
