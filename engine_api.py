@@ -31,3 +31,9 @@ class EngineApi:
         msg = json.dumps({"jsonrpc": "2.0", "id": 0, "handle": -1, "method": "CreateApp", "params": [app_name]})
         response = self.engine_socket.send_call(self.engine_socket, msg)
         return json.loads(response)['result']['qAppId']
+
+    # returns true if the deletion was successful
+    def delete_app(self, app_name):
+        msg = json.dumps({"jsonrpc": "2.0", "id": 0, "handle": -1, "method": "DeleteApp", "params": [app_name]})
+        response = self.engine_socket.send_call(self.engine_socket, msg)
+        return json.loads(response)['result']['qSuccess']
