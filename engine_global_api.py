@@ -2,16 +2,9 @@ from engine_communicator import EngineCommunicator
 import json
 
 
-class EngineApi:
-    def __init__(self, url):
-        self.url = url
-        self.engine_socket = None
-
-    def connect(self):
-        self.engine_socket = EngineCommunicator(self.url)
-
-    def disconnect(self):
-        self.engine_socket.close_qvengine_connection(self.engine_socket)
+class EngineGlobalApi:
+    def __init__(self, socket):
+        self.engine_socket = socket
 
     # returns an array of doc objects. The doc object contains doc name, size, file time etc
     def get_doc_list(self):
@@ -49,4 +42,8 @@ class EngineApi:
         msg = json.dumps({"jsonrpc": "2.0", "id": 0, "handle": -1, "method": "GetActiveDoc", "params": []})
         response = self.engine_socket.send_call(self.engine_socket, msg)
         return json.loads(response)['result']['qReturn']
+
+    @staticmethod
+    def get_doc_handle(doc_object):
+        return doc_object['qHandle']
 
