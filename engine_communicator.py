@@ -6,6 +6,7 @@ class EngineCommunicator:
     def __init__(self, url):
         self.url = url
         self.ws = create_connection(self.url)
+        self.session = self.ws.recv()  # Holds session object. Required for Qlik Sense Sept. 2017 and later.
 
     @staticmethod
     def send_call(self, call_msg):
