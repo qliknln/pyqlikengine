@@ -25,6 +25,7 @@ class EngineGlobalApi:
         response = self.engine_socket.send_call(self.engine_socket, msg)
         return json.loads(response)['result']['qAppId']
 
+
     # returns true if the deletion was successful
     def delete_app(self, app_name):
         msg = json.dumps({"jsonrpc": "2.0", "id": 0, "handle": -1, "method": "DeleteApp", "params": [app_name]})
@@ -44,6 +45,6 @@ class EngineGlobalApi:
         return json.loads(response)['result']['qReturn']
 
     @staticmethod
-    def get_doc_handle(doc_object):
-        return doc_object['qHandle']
+    def get_handle(object):
+        return object['qHandle']
 
