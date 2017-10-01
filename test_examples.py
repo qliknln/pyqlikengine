@@ -35,7 +35,7 @@ def make_selection():
 make_selection()
 
 #conn.connect()
-#print conn.get_doc_list()
+print ega.get_doc_list()
 #print conn.get_os_name()
 #ega.create_app('theApp')
 #time.sleep(1)
