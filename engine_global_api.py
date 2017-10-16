@@ -22,8 +22,13 @@ class EngineGlobalApi:
     # if it's running against Enterprise, app id will be a guid
     def create_app(self, app_name):
         msg = json.dumps({"jsonrpc": "2.0", "id": 0, "handle": -1, "method": "CreateApp", "params": [app_name]})
-        response = self.engine_socket.send_call(self.engine_socket, msg)
-        return json.loads(response)['result']['qAppId']
+        response = json.loads(self.engine_socket.send_call(self.engine_socket, msg))
+        if 'error' in response:
+            error_msg = response["error"]["message"]
+            code = response["error"]["code"]
+            return "Error code - " + str(code) + ", Error Msg: " + error_msg
+        else:
+            return response['result']['qAppId']
 
     # DeleteApp Method Deletes an app from the Qlik Sense repository or from the file system. Qlik Sense Enterprise:
     # In addition to being removed from the repository, the app is removed from the directory as well:
@@ -43,7 +48,12 @@ class EngineGlobalApi:
                                                                                                    password, serial,
                                                                                                    no_data]})
         response = self.engine_socket.send_call(self.engine_socket, msg)
-        return json.loads(response)['result']['qReturn']
+        if "error" in response:
+            error_msg = json.loads(response)["error"]["message"]
+            code = json.loads(response)["error"]["code"]
+            return "Error code: " + str(code) + ", Error Msg: " + error_msg
+        else:
+            return json.loads(response)['result']["qReturn"]
 
     # returns an object with handle, generic id and type for the active app
     def get_active_doc(self):
@@ -52,8 +62,8 @@ class EngineGlobalApi:
         return json.loads(response)['result']['qReturn']
 
     @staticmethod
-    def get_handle(object):
-        return object['qHandle']
+    def get_handle(obj):
+        return obj["qHandle"]
 
     # Abort All commands
     def abort_all(self):
