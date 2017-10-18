@@ -4,9 +4,7 @@ from engine_app_api import EngineAppApi
 from engine_generic_object_api import EngineGenericObjectApi
 from engine_field_api import EngineFieldApi
 from structs import Structs
-import time
 import unittest
-import tempfile
 
 
 class TestAppApi(unittest.TestCase):

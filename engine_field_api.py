@@ -12,4 +12,4 @@ class EngineFieldApi:
         msg = json.dumps({"jsonrpc": "2.0", "id": 0, "handle": fld_handle, "method": "SelectValues",
                           "params": [values, False, False]})
         response = self.engine_socket.send_call(self.engine_socket, msg)
-        return json.loads(response)
+        return json.loads(response)["result"], json.loads(response)["change"]

@@ -16,3 +16,9 @@ class EngineGenericObjectApi:
                           "params": [path,pages]})
         response = self.engine_socket.send_call(self.engine_socket, msg)
         return json.loads(response)["result"]
+
+    def get_list_object_data(self, handle, path="/qListObjectDef", pages=[]):
+        msg = json.dumps({"jsonrpc": "2.0", "id": 0, "handle": handle, "method": "GetListObjectData",
+                          "params": [path, pages]})
+        response = self.engine_socket.send_call(self.engine_socket, msg)
+        return json.loads(response)

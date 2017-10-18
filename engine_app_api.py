@@ -1,5 +1,3 @@
-from engine_communicator import EngineCommunicator
-from engine_global_api import EngineGlobalApi
 import json
 
 
@@ -492,3 +490,9 @@ class EngineAppApi:
         ### AbortModal (UI), ApplyBookmark, BackCount(UI), CheckNumberOrExpression, ClearUndoBuffer, CloneBookmark, CloneDimension, CloneMeasure, CloneObject, CommitDraft,
         ### CreateBookmark, CreateDraft, CreateVariableEx, DeleteConnection, DestroyBookmark, DestroyDraft, DoReloadEx, FindMatchingFields, Forward, ForwardCount,
         ### GetAssociationScores, GetBookmark, GetBookmarks, GetContentLibraries, GetFavoriteVariables,
+
+    def create_session_object(self, doc_handle, param):
+        msg = json.dumps({"jsonrpc": "2.0", "id": 0, "handle": doc_handle, "method": "CreateSessionObject",
+                          "params": [param]})
+        response = self.engine_socket.send_call(self.engine_socket, msg)
+        return json.loads(response)['result']['qReturn']
