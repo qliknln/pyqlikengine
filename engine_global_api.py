@@ -27,7 +27,7 @@ class EngineGlobalApi:
             code = response["error"]["code"]
             return "Error code - " + str(code) + ", Error Msg: " + error_msg
         else:
-            return response['result']['qAppId']
+            return response['result']
 
     # DeleteApp Method Deletes an app from the Qlik Sense repository or from the file system. Qlik Sense Enterprise:
     # In addition to being removed from the repository, the app is removed from the directory as well:
@@ -39,7 +39,7 @@ class EngineGlobalApi:
     def delete_app(self, app_name):
         msg = json.dumps({"jsonrpc": "2.0", "id": 0, "handle": -1, "method": "DeleteApp", "params": [app_name]})
         response = self.engine_socket.send_call(self.engine_socket, msg)
-        return json.loads(response)['result']['qSuccess']
+        return json.loads(response)['result']
 
     # opens an app and returns an object with handle, generic id and type
     def open_doc(self, app_name, user_name='', password='', serial='', no_data=False):

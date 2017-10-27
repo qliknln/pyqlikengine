@@ -27,12 +27,12 @@ class TestGlobalApi(unittest.TestCase):
         self.assertTrue(len(response) > 0)
 
     def test_app_methods(self):
-        response_create = self.ega.create_app("test_app")
+        response_create = self.ega.create_app("test_app")['qAppId']
         self.assertTrue(response_create.endswith(".qvf"), "Failed to create app. Response did not end with .qvf")
         #response_copy = self.ega.copy_app("test_app_copy", response_create)
         #print response_copy
         response_open = self.ega.open_doc("test_app")
-        self.assertEqual(response_open["qHandle"],1,"Failed to retrive a proper document handle with open_doc method")
+        self.assertEqual(response_open["qHandle"],1,"Failed to retrieve a proper document handle with open_doc method")
         self.assertTrue(response_open["qGenericId"].endswith(".qvf"),
                         'Generic id does not contain any app file extension using open_doc method')
         self.assertEqual(response_open["qType"],"Doc",'Unknown doc type returned using open_doc method')
@@ -71,20 +71,20 @@ class TestGlobalApi(unittest.TestCase):
         self.assertTrue(response.startswith("SessionApp_"),"Failed to create session app")
 
     def test_create_session_app_from_app(self):
-        response_create = self.ega.create_app("test_app")
+        response_create = self.ega.create_app("test_app")['qAppId']
         response = self.ega.create_session_app_from_app(response_create)
         self.ega.delete_app(response_create)
         self.assertTrue(response.startswith("SessionApp_"),"Failed to create session app")
 
     def test_export_app(self):
         tmp_folder = tempfile.gettempdir()
-        response_create = self.ega.create_app("test_app")
+        response_create = self.ega.create_app("test_app")['qAppId']
         response = self.ega.export_app(tmp_folder,response_create)
         self.ega.delete_app(response_create)
         print "BUG returns method not found. Reported"
 
     def test_replace_app_from_id(self):
-        response_create = self.ega.create_app("test_app")
+        response_create = self.ega.create_app("test_app")['qAppId']
         tmp_folder = tempfile.gettempdir()
         response = self.ega.replace_app_from_id(tmp_folder, response_create)
         print "Same bug as CopyApp and ExportApp"
