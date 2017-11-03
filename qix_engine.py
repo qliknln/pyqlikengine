@@ -61,18 +61,18 @@ class QixEngine:
         return [list(i) for i in zip(*matrix)]
 
     @staticmethod
-    def convert_hypercube_to_inline_table(hc_data, table_name, no_of_columns):
+    def convert_hypercube_to_inline_table(hc_data, table_name):
         rows = hc_data["qDataPages"][0]['qMatrix']
-        script = str.format('{0}:{1}Load * Inline[{1}',table_name, '\r\n')
+        script = str.format('{0}:{1}Load * Inline [{1}', table_name, '\n')
         inline_rows = ''
         header_row = ''
-        for col_idx in range(len(rows)):
+        for col_idx in range(len(rows[0])):
             header_row = header_row + str.format('Column{0}{1}', col_idx, ',')
-        header_row = header_row[:-1] + '\r\n'
+        header_row = header_row[:-1] + '\n'
         for row in rows:
             for cell_val in row:
-                inline_rows = inline_rows + cell_val['qText'] + ','
-            inline_rows = inline_rows[:-1] + '\r\n'
+                inline_rows = inline_rows + "'" + cell_val['qText'] + "'" + ','
+            inline_rows = inline_rows[:-1] + '\n'
         return script + header_row + inline_rows + '];'
 
     def select_in_dimension(self,dimension_name, list_of_values):
