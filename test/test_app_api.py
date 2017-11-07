@@ -1,10 +1,12 @@
-from engine_communicator import EngineCommunicator
-from engine_global_api import EngineGlobalApi
-from engine_app_api import EngineAppApi
-from engine_generic_object_api import EngineGenericObjectApi
-from engine_field_api import EngineFieldApi
-from structs import Structs
 import unittest
+
+from PyQix.engine_app_api import EngineAppApi
+from PyQix.engine_communicator import EngineCommunicator
+from PyQix.engine_field_api import EngineFieldApi
+from PyQix.engine_global_api import EngineGlobalApi
+from PyQix.structs import Structs
+
+from engine_generic_object_api import EngineGenericObjectApi
 
 
 class TestAppApi(unittest.TestCase):

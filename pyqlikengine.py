@@ -1,16 +1,16 @@
-import engine_communicator
-import engine_global_api
-import engine_app_api
-import engine_generic_object_api
-import engine_field_api
-import structs
+import engine_app_api, engine_communicator, engine_field_api, engine_generic_object_api, engine_global_api, structs
 
 
 class QixEngine:
 
-    def __init__(self, url):
+    def __init__(self, url, is_secure=False, proxy_prefix='', user_directory='', user_id='', private_key_path='',
+                 ignore_cert_errors=False):
         self.url = url
-        self.conn = engine_communicator.EngineCommunicator(url)
+        if is_secure:
+            self.conn = engine_communicator.SecureEngineCommunicator(url, proxy_prefix, user_directory,user_id,
+                                                                    private_key_path, ignore_cert_errors)
+        else:
+            self.conn = engine_communicator.EngineCommunicator(url)
         self.ega = engine_global_api.EngineGlobalApi(self.conn)
         self.eaa = engine_app_api.EngineAppApi(self.conn)
         self.egoa = engine_generic_object_api.EngineGenericObjectApi(self.conn)
@@ -83,6 +83,39 @@ class QixEngine:
             val = {'qText': val}
             values_to_select.append(val)
         return self.efa.select_values(fld_handle, values_to_select)
+
+    def select_excluded_in_dimension(self, dimension_name):
+        lb_field = self.eaa.get_field(self.app_handle, dimension_name)
+        fld_handle = self.ega.get_handle(lb_field)
+        return self.efa.select_excluded(fld_handle)
+
+    def select_possible_in_dimension(self, dimension_name):
+        lb_field = self.eaa.get_field(self.app_handle, dimension_name)
+        fld_handle = self.ega.get_handle(lb_field)
+        return self.efa.select_possible(fld_handle)
+
+    # return a list of tuples where first value in tuple is the actual data value and the second tuple value is that
+    # values selection state
+    def get_list_object_data(self, dimension_name):
+        lb_field = self.eaa.get_field(self.app_handle, dimension_name)
+        fld_handle = self.ega.get_handle(lb_field)
+        nx_page = self.Structs.nx_page(0, 0, self.efa.get_cardinal(fld_handle))
+        lb_def = self.Structs.list_object_def("$", "", [dimension_name], None, None, [nx_page])
+        lb_param = {"qInfo": {"qId": "SLB01", "qType": "ListObject"}, "qListObjectDef": lb_def}
+        listobj_handle = self.eaa.create_session_object(self.app_handle, lb_param)["qHandle"]
+        val_list = self.egoa.get_layout(listobj_handle)["result"]["qLayout"]["qListObject"]["qDataPages"][0]["qMatrix"]
+        val_n_state_list=[]
+        for val in val_list:
+            val_n_state_list.append((val[0]["qText"],val[0]["qState"]))
+        return val_n_state_list
+
+    def clear_selection_in_dimension(self, dimension_name):
+        lb_field = self.eaa.get_field(self.app_handle, dimension_name)
+        fld_handle = self.ega.get_handle(lb_field)
+        return self.efa.clear(fld_handle)['qReturn']
+
+    def clear_all_selections(self):
+        return self.eaa.clear_all(self.app_handle, True)
 
     def delete_app(self, app_name):
         return self.ega.delete_app(app_name)['qSuccess']
