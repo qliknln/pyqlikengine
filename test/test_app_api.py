@@ -1,10 +1,10 @@
 import unittest
 
-from PyQix.engine_app_api import EngineAppApi
-from PyQix.engine_communicator import EngineCommunicator
-from PyQix.engine_field_api import EngineFieldApi
-from PyQix.engine_global_api import EngineGlobalApi
-from PyQix.structs import Structs
+from engine_app_api import EngineAppApi
+from engine_communicator import EngineCommunicator
+from engine_field_api import EngineFieldApi
+from engine_global_api import EngineGlobalApi
+from structs import Structs
 
 from engine_generic_object_api import EngineGenericObjectApi
 
@@ -20,9 +20,9 @@ class TestAppApi(unittest.TestCase):
         self.egoa = EngineGenericObjectApi(self.conn)
         self.efa = EngineFieldApi(self.conn)
         self.struct = Structs()
-        self.app = self.ega.create_app("TestApp")
+        self.app = self.ega.create_app("TestApp")['qAppId']
         opened_app = self.ega.open_doc(self.app)
-        self.app_handle = self.ega.get_handle(opened_app)
+        self.app_handle = self.ega.get_handle(opened_app['qReturn'])
 
     def test_add_alternate_state(self):
         response = self.eaa.add_alternate_state(self.app_handle,"MyState")

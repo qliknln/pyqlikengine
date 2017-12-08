@@ -8,6 +8,8 @@ class TestQixEngine(unittest.TestCase):
         self.qixe = QixEngine('ws://localhost:4848/app')
         app = self.qixe.create_app('test_app')
         self.assertTrue(app.endswith('.qvf'), 'Failed to create app')
+        app_exists = self.qixe.create_app('test_app')
+        self.assertTrue(app_exists == "App already exists", 'Failed to handle existing app exception')
         self.opened_app = self.qixe.open_app(app)
         script = file('./test_data/ctrl00_script.qvs').read()
         self.assertTrue(self.qixe.load_script(script), 'Failed to load script')

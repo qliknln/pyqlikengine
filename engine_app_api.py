@@ -40,7 +40,10 @@ class EngineAppApi:
         msg = json.dumps({"jsonrpc": "2.0", "id": 0, "handle": doc_handle, "method": "GetField", "params":
             {"qFieldName": field_name, "qStateName": state_name}})
         response = self.engine_socket.send_call(self.engine_socket, msg)
-        return json.loads(response)['result']['qReturn']
+        try:
+            return json.loads(response)['result']['qReturn']
+        except KeyError:
+            return json.loads(response)['error']
 
     def create_object(self, doc_handle, q_id="LB01", q_type = "ListObject", struct_name="qListObjectDef",
                       ob_struct={}):

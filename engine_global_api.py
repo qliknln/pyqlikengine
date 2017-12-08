@@ -8,26 +8,31 @@ class EngineGlobalApi:
     # returns an array of doc objects. The doc object contains doc name, size, file time etc
     def get_doc_list(self):
         msg = json.dumps({"jsonrpc": "2.0", "id": 0, "handle": -1, "method": "GetDocList", "params": []})
-        response = self.engine_socket.send_call(self.engine_socket, msg)
-        return json.loads(response)['result']['qDocList']
+        response = json.loads(self.engine_socket.send_call(self.engine_socket, msg))
+        try:
+            return response['result']['qDocList']
+        except KeyError:
+            return response['error']
 
     # returns the os name (always windowsNT). Obsolete?
     def get_os_name(self):
         msg = json.dumps({"jsonrpc": "2.0", "id": 0, "handle": -1, "method": "OSName", "params": []})
-        response = self.engine_socket.send_call(self.engine_socket, msg)
-        return json.loads(response)['result']['qReturn']
+        response =json.loads(self.engine_socket.send_call(self.engine_socket, msg))
+        try:
+            return response['result']['qReturn']
+        except KeyError:
+            return response['error']
 
     # returns the app id. If desktop is used the app id is the same as the full path to qvf
     # if it's running against Enterprise, app id will be a guid
     def create_app(self, app_name):
         msg = json.dumps({"jsonrpc": "2.0", "id": 0, "handle": -1, "method": "CreateApp", "params": [app_name]})
         response = json.loads(self.engine_socket.send_call(self.engine_socket, msg))
-        if 'error' in response:
-            error_msg = response["error"]["message"]
-            code = response["error"]["code"]
-            return "Error code - " + str(code) + ", Error Msg: " + error_msg
-        else:
+        try:
             return response['result']
+        except KeyError:
+            return response["error"]
+
 
     # DeleteApp Method Deletes an app from the Qlik Sense repository or from the file system. Qlik Sense Enterprise:
     # In addition to being removed from the repository, the app is removed from the directory as well:
@@ -38,56 +43,58 @@ class EngineGlobalApi:
     # folder %userprofile%\Documents\Qlik\Sense\Apps. This parameter is mandatory.
     def delete_app(self, app_name):
         msg = json.dumps({"jsonrpc": "2.0", "id": 0, "handle": -1, "method": "DeleteApp", "params": [app_name]})
-        response = self.engine_socket.send_call(self.engine_socket, msg)
-        return json.loads(response)['result']
+        response = json.loads(self.engine_socket.send_call(self.engine_socket, msg))
+        try:
+            return response['result']
+        except KeyError:
+            return response["error"]
 
     # opens an app and returns an object with handle, generic id and type
     def open_doc(self, app_name, user_name='', password='', serial='', no_data=False):
-        msg = json.dumps({"jsonrpc": "2.0", "id": 0, "handle": -1, "method": "OpenDoc", "params": [app_name, user_name,
-                                                                                                   password, serial,
-                                                                                                   no_data]})
-        response = self.engine_socket.send_call(self.engine_socket, msg)
-        if "error" in response:
-            error_msg = json.loads(response)["error"]["message"]
-            code = json.loads(response)["error"]["code"]
-            return "Error code: " + str(code) + ", Error Msg: " + error_msg
-        else:
-            return json.loads(response)['result']["qReturn"]
+        msg = json.dumps(
+            {"jsonrpc": "2.0", "id": 0, "handle": -1, "method": "OpenDoc", "params": [app_name, user_name,
+                                                                                      password, serial,
+                                                                                      no_data]})
+        response = json.loads(self.engine_socket.send_call(self.engine_socket, msg))
+        try:
+            return response['result']
+        except KeyError:
+            return response["error"]
 
     # returns an object with handle, generic id and type for the active app
     def get_active_doc(self):
         msg = json.dumps({"jsonrpc": "2.0", "id": 0, "handle": -1, "method": "GetActiveDoc", "params": []})
-        response = self.engine_socket.send_call(self.engine_socket, msg)
-        return json.loads(response)['result']['qReturn']
+        response = json.loads(self.engine_socket.send_call(self.engine_socket, msg))
+        try:
+            return response['result']
+        except KeyError:
+            return response["error"]
 
     @staticmethod
     def get_handle(obj):
-        return obj["qHandle"]
+        try:
+            return obj["qHandle"]
+        except ValueError:
+            return "Bad handle value in " + obj
 
     # Abort All commands
     def abort_all(self):
         msg = json.dumps({"jsonrpc": "2.0", "id": 0, "handle": -1, "method": "AbortAll", "params": []})
-        response = self.engine_socket.send_call(self.engine_socket, msg)
-        response_json = json.loads(response)
-        if 'error' in response_json:
-            error_msg = response_json.error.message
-            code = ''
-            return "Error code - " + code + ", Error Msg: " + error_msg
-        else:
-            return json.loads(response)['result']  # ['qReturn']
+        response = json.loads(self.engine_socket.send_call(self.engine_socket, msg))
+        try:
+            return response['result']
+        except KeyError:
+            return json.loads(response)["error"]
 
     # Abort Specific Request
     def abort_request(self, request_id):
         msg = json.dumps(
             {"jsonrpc": "2.0", "id": 0, "handle": -1, "method": "AbortRequest", "params": {"qRequestId": request_id}})
-        response = self.engine_socket.send_call(self.engine_socket, msg)
-        response_json = json.loads(response)
-        if 'error' in response_json:
-            error_msg = response_json.error.message
-            code = ''
-            return "Error code - " + code + ", Error Msg: " + error_msg
-        else:
-            return response_json['result']  # ['qReturn']
+        response = json.loads(self.engine_socket.send_call(self.engine_socket, msg))
+        try:
+            return response['result']  # ['qReturn']
+        except KeyError:
+            return response["error"]
 
     # Configure Reload - This is done before doing a reload qCancelOnScriptError: If set to true, the script
     # execution is halted on error. Otherwise, the engine continues the script execution. This parameter is relevant
@@ -101,14 +108,11 @@ class EngineGlobalApi:
         msg = json.dumps({"jsonrpc": "2.0", "id": 0, "handle": -1, "method": "ConfigureReload",
                           "params": {"qCancelOnScriptError": cancel_on_error, "qUseErrorData": use_error_data,
                                      "qInteractOnError": interact_on_error}})
-        response = self.engine_socket.send_call(self.engine_socket, msg)
-        response_json = json.loads(response)
-        if 'error' in response_json:
-            error_msg = response_json['error']['message']
-            code = str(response_json['error']['code'])
-            return "Error code: " + code + ", Error Msg: " + error_msg
-        else:
-            return response_json['result']  # ['qReturn']
+        response = json.loads(self.engine_socket.send_call(self.engine_socket, msg))
+        try:
+            return response['result']
+        except KeyError:
+            return response["error"]
 
     # Copy app - This is done before doing a reload qTargetAppId (MANDATORY):  Identifier (GUID) of the app
     # entity in the Qlik Sense repository. The app entity must have been previously created by the repository (via
@@ -126,30 +130,26 @@ class EngineGlobalApi:
     def copy_app(self, target_app_id, src_app_id, qIds=[""]):
         msg = json.dumps({"jsonrpc": "2.0", "id": 0, "handle": -1, "method": "CopyApp",
                           "params": {"qTargetAppId": target_app_id, "qSrcAppId": src_app_id, "qIds": qIds}})
-        response = self.engine_socket.send_call(self.engine_socket, msg)
-        response_json = json.loads(response)
-        if 'error' in response_json:
-            error_msg = response_json['error']['message']
-            code = str(response_json['error']['code'])
-            return "Error code - " + code + ", Error Msg: " + error_msg
-        elif response_json['result']['qSuccess']:
-            return "Success?: " + response_json['result'].qSuccess
+        response = json.loads(self.engine_socket.send_call(self.engine_socket, msg))
+        try:
+            return response['result']
+        except KeyError:
+            return response["error"]
 
     # Creates an empty session app. The following applies: The name of a session app cannot be chosen. The engine
     # automatically assigns a unique identifier to the session app. A session app is not persisted and cannot be
     # saved. Everything created during a session app is non-persisted; for example: objects, data connections.
     def create_session_app(self):
         msg = json.dumps({"jsonrpc": "2.0", "id": 0, "handle": -1, "method": "CreateSessionApp", "params": {}})
-        response = self.engine_socket.send_call(self.engine_socket, msg)
-        response_json = json.loads(response)
-        if 'error' in response_json:
-            error_msg = response_json['error']['message']
-            code = str(response_json['error']['code'])
-            return "Error code - " + code + ", Error Msg: " + error_msg
-        else:
+        response = json.loads(self.engine_socket.send_call(self.engine_socket, msg))
+        try:
+            return response['result']
+        except KeyError:
+            return response["error"]
+
             # Return the session App Id to use for subsequent calls
             # The identifier of the session app is composed of the prefix SessionApp_ and of a GUID.
-            return response_json['result']['qSessionAppId']  # ['qReturn']
+              # ['qReturn']
 
     # Create an empty session app from an Existing App The objects in the source app are copied into the session app
     # but contain no data. The script of the session app can be edited and reloaded. The name of a session app cannot
@@ -159,16 +159,11 @@ class EngineGlobalApi:
     def create_session_app_from_app(self, src_app_id):
         msg = json.dumps({"jsonrpc": "2.0", "id": 0, "handle": -1, "method": "CreateSessionAppFromApp",
                           "params": {"qSrcAppId": src_app_id}})
-        response = self.engine_socket.send_call(self.engine_socket, msg)
-        response_json = json.loads(response)
-        if 'error' in response_json:
-            error_msg = response_json['error']['message']
-            code = str(response_json['error']['code'])
-            return "Error code - " + code + ", Error Msg: " + error_msg
-        else:
-            # Return the session App Id to use for subsequent calls
-            # The identifier of the session app is composed of the prefix SessionApp_ and of a GUID.
-            return response_json['result']['qSessionAppId']  # ['qReturn']
+        response = json.loads(self.engine_socket.send_call(self.engine_socket, msg))
+        try:
+            return response['result']
+        except KeyError:
+            return response["error"]
 
     # ExportApp method: Exports an app from the Qlik Sense repository to the file system. !!! This operation is
     # possible only in Qlik Sense Enterprise. !!! Parameters: qTargetPath (MANDATORY) - Path and name of the target
@@ -178,14 +173,11 @@ class EngineGlobalApi:
     def export_app(self, target_path, src_app_id, qIds=[""]):
         msg = json.dumps({"jsonrpc": "2.0", "id": 0, "handle": -1, "method": "ExportApp",
                           "params": {"qTargetPath": target_path, "qSrcAppId": src_app_id, "qIds": qIds}})
-        response = self.engine_socket.send_call(self.engine_socket, msg)
-        response_json = json.loads(response)
-        if 'error' in response_json:
-            error_msg = response_json['error']['message']
-            code = str(response_json['error']['code'])
-            return "Error code - " + code + ", Error Msg: " + error_msg
-        elif response_json["result"]["qSuccess"]:
-            return "Success?: " + response_json['result'].qSuccess
+        response = json.loads(self.engine_socket.send_call(self.engine_socket, msg))
+        try:
+            return response['result']
+        except KeyError:
+            return response["error"]
 
     # ReplaceAppFromID method: Replaces an app with the objects from a source app. The list of objects in the app to
     # be replaced must be defined in qIds. !!! This operation is possible only in Qlik Sense Enterprise. !!!
@@ -200,22 +192,21 @@ class EngineGlobalApi:
     def replace_app_from_id(self, target_path, src_app_id, qIds=[""]):
         msg = json.dumps({"jsonrpc": "2.0", "id": 0, "handle": -1, "method": "ReplaceAppFromID",
                           "params": {"qTargetAppId": target_path, "qSrcAppId": src_app_id, "qIds": qIds}})
-        response = self.engine_socket.send_call(self.engine_socket, msg)
-        response_json = json.loads(response)
-        if 'error' in response_json:
-            error_msg = response_json['error']['message']
-            code = str(response_json['error']['code'])
-            return "Error code - " + code + ", Error Msg: " + error_msg
-        elif response_json["result"]["qSuccess"]:
-            return "Success?: " + response_json['result'].qSuccess
+        response = json.loads(self.engine_socket.send_call(self.engine_socket, msg))
+        try:
+            return response['result']
+        except KeyError:
+            return response['error']
 
     # GetAuthenticatedUser
     # No parameters
     def get_auth_user(self):
         msg = json.dumps({"jsonrpc": "2.0", "id": 0, "handle": -1, "method": "GetAuthenticatedUser", "params": {}})
-        response = self.engine_socket.send_call(self.engine_socket, msg)
-        response_json = json.loads(response)
-        return response_json["result"]
+        response_json = json.loads(self.engine_socket.send_call(self.engine_socket, msg))
+        try:
+            return response_json["result"]
+        except:
+            return response_json["error"]
 
     # GetDatabasesFromConnectionString Lists the databases in a ODBC, OLEDB or CUSTOM data source (global level)
     # Parameters: qConnection (object - has several fields) qId: Identifier of the connection. Is generated by
@@ -238,14 +229,11 @@ class EngineGlobalApi:
                           "params": [{"qId": "", "qName": connect_name, "qConnectionString": connect_string,
                                       "qType": connect_type, "qUserName": user_name, "qPassword": password,
                                       "qModifiedDate": mod_date, "qMeta": meta, "qLogOn": sso_passthrough}]})
-        response = self.engine_socket.send_call(self.engine_socket, msg)
-        response_json = json.loads(response)
-        if 'error' in response_json:
-            error_msg = response_json['error']['message']
-            code = str(response_json['error']['code'])
-            return "Error code - " + code + ", Error Msg: " + error_msg
-        elif response_json["result"]["qSuccess"]:
-            return response_json['result'].qDatabases  # Returns an array of databases
+        response = json.loads(self.engine_socket.send_call(self.engine_socket, msg))
+        try:
+            return response['result']
+        except KeyError:
+            return response['error']
 
     # IsValidConnectionString method: Checks if a connection string is valid.
     def is_valid_connect_string(self, connect_name, connect_string, connect_type, user_name, password, mod_date="",
@@ -254,38 +242,29 @@ class EngineGlobalApi:
             {"qId": "", "qName": connect_name, "qConnectionString": connect_string, "qType": connect_type,
              "qUserName": user_name, "qPassword": password, "qModifiedDate": mod_date, "qMeta": meta,
              "qLogOn": sso_passthrough}]})
-        response = self.engine_socket.send_call(self.engine_socket, msg)
-        response_json = json.loads(response)
-        if 'error' in response_json:
-            error_msg = response_json['error']['message']
-            code = str(response_json['error']['code'])
-            return "Error code - " + code + ", Error Msg: " + error_msg
-        elif response_json["result"]["qSuccess"]:
-            return response_json['result'].qDatabases  # Returns an array of databases
+        response = json.loads(self.engine_socket.send_call(self.engine_socket, msg))
+        try:
+            return response['result'] # Returns an array of databases
+        except KeyError:
+            return response['error']
 
     # GetOdbcDsns: List all the ODBC connectors installed on the Sense server machine in Windows
     def get_odbc_dsns(self):
         msg = json.dumps({"jsonrpc": "2.0", "id": 0, "handle": -1, "method": "GetOdbcDsns", "params": {}})
-        response = self.engine_socket.send_call(self.engine_socket, msg)
-        response_json = json.loads(response)
-        if 'error' in response_json:
-            error_msg = response_json['error']['message']
-            code = str(response_json['error']['code'])
-            return "Error code - " + code + ", Error Msg: " + error_msg
-        elif response_json["result"]["qSuccess"]:
-            return response_json['result'].qOdbcDsns  # Returns an array of DSN's
+        response = json.loads(self.engine_socket.send_call(self.engine_socket, msg))
+        try:
+            return response['result']
+        except KeyError:
+            return response['error']
 
     # GetOleDbProviders: Returns the list of the OLEDB providers installed on the system.
     def get_ole_dbs(self):
         msg = json.dumps({"jsonrpc": "2.0", "id": 0, "handle": -1, "method": "GetOleDbProviders", "params": {}})
-        response = self.engine_socket.send_call(self.engine_socket, msg)
-        response_json = json.loads(response)
-        if 'error' in response_json:
-            error_msg = response_json['error']['message']
-            code = str(response_json['error']['code'])
-            return "Error code - " + code + ", Error Msg: " + error_msg
-        elif response_json["result"]["qSuccess"]:
-            return response_json['result'].qOleDbProviders  # Returns an array of OLE db's
+        response = json.loads(self.engine_socket.send_call(self.engine_socket, msg))
+        try:
+            return response['result']
+        except KeyError:
+            return response['error']
 
     # GetProgress: Gives information about the progress of the DoReload and DoSave calls. Parameters: qRequestId:
     # Identifier of the DoReload or DoSave request or 0. Complete information is returned if the identifier of the
@@ -294,27 +273,21 @@ class EngineGlobalApi:
 
     def get_progress(self, request_id):
         msg = json.dumps({"jsonrpc": "2.0", "id": 0, "handle": -1, "method": "GetProgress", "params": {}})
-        response = self.engine_socket.send_call(self.engine_socket, msg)
-        response_json = json.loads(response)
-        if 'error' in response_json:
-            error_msg = response_json['error']['message']
-            code = str(response_json['error']['code'])
-            return "Error code - " + code + ", Error Msg: " + error_msg
-        elif response_json["result"]["qSuccess"]:
-            return response_json['result'].qProgressData
+        response = json.loads(self.engine_socket.send_call(self.engine_socket, msg))
+        try:
+            return response['result']
+        except KeyError:
+            return response['error']
 
     # IsDesktopMode: Indicates whether the user is working in Qlik Sense Desktop.
     # No parameters
     def is_desktop_mode(self, request_id):
         msg = json.dumps({"jsonrpc": "2.0", "id": 0, "handle": -1, "method": "IsDesktopMode", "params": {}})
-        response = self.engine_socket.send_call(self.engine_socket, msg)
-        response_json = json.loads(response)
-        if 'error' in response_json:
-            error_msg = response_json['error']['message']
-            code = str(response_json['error']['code'])
-            return "Error code - " + code + ", Error Msg: " + error_msg
-        else:
-            return response_json["result"]["qReturn"] # Returns true or false
+        response = json.loads(self.engine_socket.send_call(self.engine_socket, msg))
+        try:
+            return response['result']
+        except KeyError:
+            return response['error']
 
     @staticmethod
     def get_doc_handle(doc_object):

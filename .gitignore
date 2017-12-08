@@ -93,3 +93,6 @@ ENV/
 
 # Merge stuff
 .swp
+
+# Notes file
+notes.txt

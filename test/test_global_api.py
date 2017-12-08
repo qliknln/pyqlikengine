@@ -1,11 +1,11 @@
 import tempfile
 import unittest
 
-from PyQix.engine_app_api import EngineAppApi
-from PyQix.engine_communicator import EngineCommunicator
-from PyQix.engine_field_api import EngineFieldApi
-from PyQix.engine_global_api import EngineGlobalApi
-from PyQix.structs import Structs
+from engine_app_api import EngineAppApi
+from engine_communicator import EngineCommunicator
+from engine_field_api import EngineFieldApi
+from engine_global_api import EngineGlobalApi
+from structs import Structs
 
 from engine_generic_object_api import EngineGenericObjectApi
 
@@ -34,18 +34,20 @@ class TestGlobalApi(unittest.TestCase):
         #response_copy = self.ega.copy_app("test_app_copy", response_create)
         #print response_copy
         response_open = self.ega.open_doc("test_app")
-        self.assertEqual(response_open["qHandle"],1,"Failed to retrieve a proper document handle with open_doc method")
-        self.assertTrue(response_open["qGenericId"].endswith(".qvf"),
+        #response_open = self.ega.open_doc_ex("test_app_asdf")
+        self.assertEqual(response_open['qReturn']["qHandle"], 1,
+                         "Failed to retrieve a proper document handle with open_doc method")
+        self.assertTrue(response_open['qReturn']["qGenericId"].endswith(".qvf"),
                         'Generic id does not contain any app file extension using open_doc method')
-        self.assertEqual(response_open["qType"],"Doc",'Unknown doc type returned using open_doc method')
+        self.assertEqual(response_open['qReturn']["qType"],"Doc",'Unknown doc type returned using open_doc method')
         response_get_active_doc = self.ega.get_active_doc()
-        self.assertEqual(response_get_active_doc["qHandle"], 1, "Failed to retrive a proper document handle with "
+        self.assertEqual(response_get_active_doc['qReturn']["qHandle"], 1, "Failed to retrive a proper document handle with "
                                                                 "get_active_doc method")
-        self.assertTrue(response_get_active_doc["qGenericId"].endswith(".qvf"),
+        self.assertTrue(response_get_active_doc['qReturn']["qGenericId"].endswith(".qvf"),
                         'Generic id does not contain any app file extension  using get_active_doc method')
-        self.assertEqual(response_get_active_doc["qType"], "Doc", 'Unknown doc type returned using get_active_doc '
+        self.assertEqual(response_get_active_doc['qReturn']["qType"], "Doc", 'Unknown doc type returned using get_active_doc '
                                                                   'method')
-        response_delete = self.ega.delete_app(response_create)
+        response_delete = self.ega.delete_app(response_create)['qSuccess']
         #self.ega.delete_app(response_copy)
         self.assertTrue(response_delete, "Failed to delete app")
 
@@ -62,19 +64,16 @@ class TestGlobalApi(unittest.TestCase):
     def test_configure_reload(self):
         response_pos = self.ega.configure_reload(True, True, True)
         self.assertEqual(response_pos, {}, 'configure_reload method returned unexpected object')
-        response_neg = self.ega.configure_reload('dummy',True,True)
-        self.assertEqual(response_neg,"Error code: -32602, Error Msg: Invalid method parameter(s)","Unknown error "
-                                                                                                   "message for "
-                                                                                                   "configure_reload "
-                                                                                                   "method")
+        response_neg = self.ega.configure_reload('dummy',True,True)['message']
+        self.assertEqual(response_neg, "Invalid method parameter(s)")
 
     def test_create_session_app(self):
-        response = self.ega.create_session_app()
+        response = self.ega.create_session_app()['qSessionAppId']
         self.assertTrue(response.startswith("SessionApp_"),"Failed to create session app")
 
     def test_create_session_app_from_app(self):
         response_create = self.ega.create_app("test_app")['qAppId']
-        response = self.ega.create_session_app_from_app(response_create)
+        response = self.ega.create_session_app_from_app(response_create)['qSessionAppId']
         self.ega.delete_app(response_create)
         self.assertTrue(response.startswith("SessionApp_"),"Failed to create session app")
 
@@ -97,8 +96,8 @@ class TestGlobalApi(unittest.TestCase):
         self.assertTrue(type(response) is dict, "Failed to retrieve authenticated user")
 
     def test_is_desktop_mode(self):
-        response = self.ega.is_desktop_mode(0)
-        self.assertTrue(type(response) is bool,'Failed to check destop mode')
+        response = self.ega.is_desktop_mode(0)['qReturn']
+        self.assertTrue(type(response) is bool,'Failed to check desktop mode')
 
     # Clean up after the tests have been run
     def tearDown(self):

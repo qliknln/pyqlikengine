@@ -20,14 +20,17 @@ class QixEngine:
 
     def create_app(self, app_name='my_app'):
         app = self.ega.create_app(app_name)
-        return app['qAppId']
+        try:
+            return app['qAppId']
+        except KeyError:
+            return app['message']
 
     def load_script(self, script):
         self.eaa.set_script(self.app_handle, script)
         return self.eaa.do_reload_ex(self.app_handle)['qSuccess']
 
     def open_app(self, app_obj):
-        opened_app = self.ega.open_doc(app_obj)
+        opened_app = self.ega.open_doc(app_obj)['qReturn']
         self.app_handle = self.ega.get_handle(opened_app)
         return opened_app['qGenericId']
 
