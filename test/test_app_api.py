@@ -29,20 +29,49 @@ class TestAppApi(unittest.TestCase):
         self.assertEqual(response, {}, "Failed to add alternate state")
 
     def test_create_hypercube_object(self):
-        script = file('./test/test_data/ctrl00_script.qvs').read()
+        with open('./test/test_data/ctrl00_script.qvs') as f:
+            script = f.read()
         self.eaa.set_script(self.app_handle,script)
         self.eaa.do_reload_ex(self.app_handle)
-        hc_inline_dim = Structs.nx_inline_dimension_def(["Alpha"])
+
+        #Create the inline dimension structures
+        hc_inline_dim1 = Structs.nx_inline_dimension_def(["Alpha"])
+        hc_inline_dim2 = Structs.nx_inline_dimension_def(["Num"])
+
+        #Create a sort structure
         hc_mes_sort = Structs.nx_sort_by()
-        hc_inline_mes = Structs.nx_inline_measure_def("=Sum(Num)")
-        hc_dim = Structs.nx_hypercube_dimensions(hc_inline_dim)
-        hc_mes = Structs.nx_hypercube_measure(hc_mes_sort, hc_inline_mes)
-        nx_page = Structs.nx_page(0, 0, 26, 2)
-        hc_def = Structs.hypercube_def("$", [hc_dim],[hc_mes], [nx_page])
+
+        #Create the measure structures
+        hc_inline_mes1 = Structs.nx_inline_measure_def("=Sum(Num)")
+        hc_inline_mes2 = Structs.nx_inline_measure_def("=Avg(Num)")
+
+        #Create hypercube dimensions from the inline dimension structures
+        hc_dim1 = Structs.nx_hypercube_dimensions(hc_inline_dim1)
+        hc_dim2 = Structs.nx_hypercube_dimensions(hc_inline_dim2)
+
+        # Create hypercube measures from the inline measure structures
+        hc_mes1 = Structs.nx_hypercube_measure(hc_mes_sort, hc_inline_mes1)
+        hc_mes2 = Structs.nx_hypercube_measure(hc_mes_sort, hc_inline_mes2)
+
+        # Create the paging model/structure (26 rows and 4 columns)
+        nx_page = Structs.nx_page(0, 0, 26, 4)
+
+        # Create a hypercube definition with arrays of hc dims, measures and nxpages
+        hc_def = Structs.hypercube_def("$", [hc_dim1, hc_dim2], [hc_mes1, hc_mes2], [nx_page])
+
+        # Create a Chart object with the hypercube definitions as parameter
         hc_response = self.eaa.create_object(self.app_handle, "CH01", "Chart", "qHyperCubeDef", hc_def)
-        hc_handle = self.ega.get_handle(hc_response)
+
+        #Get the handle to the chart object (this may be different in my local repo. I have made some changes to this
+        # for future versions)
+        hc_handle = self.ega.get_handle(hc_response['qReturn'])
+
+        # Validate the chart object by calling get_layout
         self.egoa.get_layout(hc_handle)
+
+        # Call the get_hypercube_data to get the resulting json object, using the handle and nx page as paramters
         hc_data = self.egoa.get_hypercube_data(hc_handle,"/qHyperCubeDef",[nx_page])
+
         self.assertTrue(type(hc_data is {}), "Unexpected type of hypercube data")
         first_element_number = hc_data["qDataPages"][0]["qMatrix"][0][0]["qElemNumber"]
         first_element_text = hc_data["qDataPages"][0]["qMatrix"][0][0]["qText"]

@@ -11,54 +11,44 @@ class EngineFieldApi:
             values = []
         msg = json.dumps({"jsonrpc": "2.0", "id": 0, "handle": fld_handle, "method": "SelectValues",
                           "params": [values, False, False]})
-        response = self.engine_socket.send_call(self.engine_socket, msg)
-        if 'error' in response:
-            error_msg = response["error"]["message"]
-            code = response["error"]["code"]
-            return "Error code - " + str(code) + ", Error Msg: " + error_msg
-        else:
-            return json.loads(response)["result"], json.loads(response)["change"]
+        response = json.loads(self.engine_socket.send_call(self.engine_socket, msg))
+        try:
+            return response
+        except KeyError:
+            return response["error"]
 
     def select_excluded(self, fld_handle):
         msg = json.dumps({"jsonrpc": "2.0", "id": 0, "handle": fld_handle, "method": "SelectExcluded",
                           "params": []})
-        response = self.engine_socket.send_call(self.engine_socket, msg)
-        if 'error' in response:
-            error_msg = response["error"]["message"]
-            code = response["error"]["code"]
-            return "Error code - " + str(code) + ", Error Msg: " + error_msg
-        else:
-            return json.loads(response)["result"], json.loads(response)["change"]
+        response = json.loads(self.engine_socket.send_call(self.engine_socket, msg))
+        try:
+            return response["result"]
+        except KeyError:
+            return response["error"]
 
     def select_possible(self, fld_handle):
         msg = json.dumps({"jsonrpc": "2.0", "id": 0, "handle": fld_handle, "method": "SelectPossible",
                           "params": []})
-        response = self.engine_socket.send_call(self.engine_socket, msg)
-        if 'error' in response:
-            error_msg = response["error"]["message"]
-            code = response["error"]["code"]
-            return "Error code - " + str(code) + ", Error Msg: " + error_msg
-        else:
-            return json.loads(response)["result"], json.loads(response)["change"]
+        response = json.loads(self.engine_socket.send_call(self.engine_socket, msg))
+        try:
+            return response["result"]
+        except KeyError:
+            return response["error"]
 
     def clear(self, fld_handle):
         msg = json.dumps({"jsonrpc": "2.0", "id": 0, "handle": fld_handle, "method": "SelectExcluded",
                           "params": []})
-        response = self.engine_socket.send_call(self.engine_socket, msg)
-        if 'error' in response:
-            error_msg = response["error"]["message"]
-            code = response["error"]["code"]
-            return "Error code - " + str(code) + ", Error Msg: " + error_msg
-        else:
-            return json.loads(response)["result"]
+        response = json.loads(self.engine_socket.send_call(self.engine_socket, msg))
+        try:
+            return response["result"]
+        except KeyError:
+            return response["error"]
 
     def get_cardinal(self, fld_handle):
         msg = json.dumps({"jsonrpc": "2.0", "id": 0, "handle": fld_handle, "method": "GetCardinal",
                           "params": []})
-        response = self.engine_socket.send_call(self.engine_socket, msg)
-        if 'error' in response:
-            error_msg = response["error"]["message"]
-            code = response["error"]["code"]
-            return "Error code - " + str(code) + ", Error Msg: " + error_msg
-        else:
-            return json.loads(response)["result"]["qReturn"]
+        response = json.loads(self.engine_socket.send_call(self.engine_socket, msg))
+        try:
+            return response["result"]
+        except KeyError:
+            return response["error"]

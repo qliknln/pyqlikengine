@@ -11,7 +11,8 @@ class TestQixEngine(unittest.TestCase):
         app_exists = self.qixe.create_app('test_app')
         self.assertTrue(app_exists == "App already exists", 'Failed to handle existing app exception')
         self.opened_app = self.qixe.open_app(app)
-        script = file('./test_data/ctrl00_script.qvs').read()
+        with open('./test_data/ctrl00_script.qvs') as f:
+            script = f.read()
         self.assertTrue(self.qixe.load_script(script), 'Failed to load script')
 
     def test_create_hypercube(self):
@@ -25,24 +26,24 @@ class TestQixEngine(unittest.TestCase):
 
     def test_select_clear_in_dimension(self):
         select_result = self.qixe.select_in_dimension('Alpha', ['A', 'C', 'E'])
-        self.assertTrue(select_result[1] == [1, 2], "Failed to select values")
-        self.assertTrue(select_result[0]['qReturn'], "Failed to select values")
+        self.assertTrue(select_result["change"] == [1, 2], "Failed to select values")
+        self.assertTrue(select_result["result"]['qReturn'], "Failed to select values")
         self.assertTrue(self.qixe.clear_selection_in_dimension('Alpha'),'Failed to clear selection')
 
     def test_select_clear_all_in_dimension(self):
         select_result = self.qixe.select_in_dimension('Alpha', ['A', 'C', 'E'])
-        self.assertTrue(select_result[1] == [1, 2], "Failed to select values")
-        self.assertTrue(select_result[0]['qReturn'], "Failed to select values")
+        self.assertTrue(select_result["change"] == [1, 2], "Failed to select values")
+        self.assertTrue(select_result["result"]['qReturn'], "Failed to select values")
         self.qixe.clear_all_selections()
 
     def test_select_excluded(self):
         self.qixe.select_in_dimension('Alpha', ['A', 'C', 'E'])
         select_result = self.qixe.select_excluded_in_dimension('Alpha')
-        self.assertTrue(select_result[0]['qReturn'], 'Failed to select excluded')
+        self.assertTrue(select_result['qReturn'], 'Failed to select excluded')
 
     def test_select_possible(self):
         select_result = self.qixe.select_possible_in_dimension('Alpha')
-        self.assertTrue(select_result[0]['qReturn'], 'Failed to select possible')
+        self.assertTrue(select_result['qReturn'], 'Failed to select possible')
 
     def test_get_list_object_data(self):
         self.assertTrue(len(self.qixe.get_list_object_data('Alpha')) == 26, 'Failed to get value list')
