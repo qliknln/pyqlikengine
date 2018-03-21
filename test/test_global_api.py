@@ -82,13 +82,13 @@ class TestGlobalApi(unittest.TestCase):
         response_create = self.ega.create_app("test_app")['qAppId']
         response = self.ega.export_app(tmp_folder,response_create)
         self.ega.delete_app(response_create)
-        print "BUG returns method not found. Reported"
+        print("BUG returns method not found. Reported")
 
     def test_replace_app_from_id(self):
         response_create = self.ega.create_app("test_app")['qAppId']
         tmp_folder = tempfile.gettempdir()
         response = self.ega.replace_app_from_id(tmp_folder, response_create)
-        print "Same bug as CopyApp and ExportApp"
+        print("Same bug as CopyApp and ExportApp")
         self.ega.delete_app(response_create)
 
     def test_get_auth_user(self):

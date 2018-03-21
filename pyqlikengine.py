@@ -27,7 +27,7 @@ class QixEngine:
 
     def load_script(self, script):
         self.eaa.set_script(self.app_handle, script)
-        return self.eaa.do_reload_ex(self.app_handle)['qSuccess']
+        return self.eaa.do_reload_ex(self.app_handle)['qResult']['qSuccess']
 
     def open_app(self, app_obj):
         opened_app = self.ega.open_doc(app_obj)['qReturn']
@@ -48,7 +48,7 @@ class QixEngine:
         nx_page = self.Structs.nx_page(0, 0, rows_to_return, no_of_columns)
         hc_def = self.Structs.hypercube_def("$", hc_dim, hc_mes, [nx_page])
         hc_response = self.eaa.create_object(self.app_handle, "CH01", "Chart", "qHyperCubeDef", hc_def)
-        hc_handle = self.ega.get_handle(hc_response)
+        hc_handle = self.ega.get_handle(hc_response["qReturn"])
         self.egoa.get_layout(hc_handle)
         hc_data = self.egoa.get_hypercube_data(hc_handle, "/qHyperCubeDef", [nx_page])
         no_of_columns = len(list_of_dimensions)+len(list_of_measures)
@@ -80,7 +80,7 @@ class QixEngine:
 
     def select_in_dimension(self,dimension_name, list_of_values):
         lb_field = self.eaa.get_field(self.app_handle, dimension_name)
-        fld_handle = self.ega.get_handle(lb_field)
+        fld_handle = self.ega.get_handle(lb_field["qReturn"])
         values_to_select = []
         for val in list_of_values:
             val = {'qText': val}
@@ -89,24 +89,24 @@ class QixEngine:
 
     def select_excluded_in_dimension(self, dimension_name):
         lb_field = self.eaa.get_field(self.app_handle, dimension_name)
-        fld_handle = self.ega.get_handle(lb_field)
+        fld_handle = self.ega.get_handle(lb_field["qReturn"])
         return self.efa.select_excluded(fld_handle)
 
     def select_possible_in_dimension(self, dimension_name):
         lb_field = self.eaa.get_field(self.app_handle, dimension_name)
-        fld_handle = self.ega.get_handle(lb_field)
+        fld_handle = self.ega.get_handle(lb_field["qReturn"])
         return self.efa.select_possible(fld_handle)
 
     # return a list of tuples where first value in tuple is the actual data value and the second tuple value is that
     # values selection state
     def get_list_object_data(self, dimension_name):
         lb_field = self.eaa.get_field(self.app_handle, dimension_name)
-        fld_handle = self.ega.get_handle(lb_field)
-        nx_page = self.Structs.nx_page(0, 0, self.efa.get_cardinal(fld_handle))
+        fld_handle = self.ega.get_handle(lb_field["qReturn"])
+        nx_page = self.Structs.nx_page(0, 0, self.efa.get_cardinal(fld_handle)["qReturn"])
         lb_def = self.Structs.list_object_def("$", "", [dimension_name], None, None, [nx_page])
         lb_param = {"qInfo": {"qId": "SLB01", "qType": "ListObject"}, "qListObjectDef": lb_def}
-        listobj_handle = self.eaa.create_session_object(self.app_handle, lb_param)["qHandle"]
-        val_list = self.egoa.get_layout(listobj_handle)["result"]["qLayout"]["qListObject"]["qDataPages"][0]["qMatrix"]
+        listobj_handle = self.eaa.create_session_object(self.app_handle, lb_param)["qReturn"]["qHandle"]
+        val_list = self.egoa.get_layout(listobj_handle)["qLayout"]["qListObject"]["qDataPages"][0]["qMatrix"]
         val_n_state_list=[]
         for val in val_list:
             val_n_state_list.append((val[0]["qText"],val[0]["qState"]))
@@ -114,7 +114,7 @@ class QixEngine:
 
     def clear_selection_in_dimension(self, dimension_name):
         lb_field = self.eaa.get_field(self.app_handle, dimension_name)
-        fld_handle = self.ega.get_handle(lb_field)
+        fld_handle = self.ega.get_handle(lb_field["qReturn"])
         return self.efa.clear(fld_handle)['qReturn']
 
     def clear_all_selections(self):

@@ -84,7 +84,7 @@ class EngineGlobalApi:
         try:
             return response['result']
         except KeyError:
-            return json.loads(response)["error"]
+            return response["error"]
 
     # Abort Specific Request
     def abort_request(self, request_id):
@@ -170,7 +170,7 @@ class EngineGlobalApi:
     # app qSrcAppId (MANDATORY) - Identifier of the source app. The identifier is a GUID from the Qlik Sense
     # repository. qIds - Array of identifiers.. The list of all the objects in the app to be exported must be given.
     # This list must contain the GUIDs of all these objects.
-    def export_app(self, target_path, src_app_id, qIds=[""]):
+    def export_app(self, target_path, src_app_id, qIds = [""]):
         msg = json.dumps({"jsonrpc": "2.0", "id": 0, "handle": -1, "method": "ExportApp",
                           "params": {"qTargetPath": target_path, "qSrcAppId": src_app_id, "qIds": qIds}})
         response = json.loads(self.engine_socket.send_call(self.engine_socket, msg))
