@@ -1,4 +1,7 @@
 # pyqlikengine
+
+[This repository is no longer maintained by me since I have moved on to new challenges outside Qlik]
+
 Qlik Engine API extended for Python
 This is an attempt to implement a Qlik Engine API extension for Python. I started working on this May 7th 2017 and it is at a very experimental level. This is very much a hobby project that I will to work on it during my spare time, whenever I have enough inspiration to do so.
 
